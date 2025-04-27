@@ -25,3 +25,13 @@ export const CreateUser=mutation({
     }
 
 })
+export const Updatetokens=mutation({
+    args:{
+        id:v.id("users"),
+        credits:v.number(),
+
+    },handler:async(ctx, args)=>{
+        const data=await ctx.db.patch(args.id, {credits:args.credits});
+        return data;
+    }
+})

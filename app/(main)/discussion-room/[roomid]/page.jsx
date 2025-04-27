@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
@@ -10,12 +10,16 @@ import { Button } from "@/components/ui/button";
 import { AIModel, getToken, speakText } from "@/services/GlobalServices";
 import { Loader2Icon } from "lucide-react";
 import Chatbox from "./_components/Chatbox";
+import { toast } from "sonner";
+import { UserContext } from "@/app/_context/UserContext";
 function DiscussionRoom() {
     const { roomid } = useParams();
+    const {userdata,setuserdata} =useContext(UserContext);
     const [expert, setexpert] = useState();
     const [enableMic, setenableMic] = useState(false);
     const [transcription, setTranscription] = useState('');
     const roomdata = useQuery(api.discussionRoom.GetDiscussionRoom, { id: roomid });
+    const [isFeedback, setIsFeedback] = useState(false);
     const updateconvo=useMutation(api.discussionRoom.Updateconversation);
     const [conversation, setConversation] = useState([
         {
@@ -32,6 +36,7 @@ function DiscussionRoom() {
     const [isLoading, setIsLoading] = useState(false);
     const mediaRecorderRef = useRef(null);
     const socketRef= useRef(null);
+    const updateUserTokens=useMutation(api.users.Updatetokens);
 
     useEffect(() => {
         if (!roomdata) return;
@@ -58,6 +63,7 @@ function DiscussionRoom() {
                 mediaRecorder.start(250);
                 setIsLoading(false);
                 setenableMic(true);
+                toast("Connected...", { duration: 2000 });
             }
 
             socket.onmessage = async(event) => {
@@ -130,8 +136,21 @@ function DiscussionRoom() {
                 conversation: conversation,
             }
         )
-
+        setIsFeedback(true);
         setIsLoading(false);
+        toast("Disconnected...", { duration: 2000 });
+    };
+    const Updatetokens =async() => {
+    const result=await updateUserTokens({
+        id:roomdata?._id,
+        credits:Number(userdata?.credits)-1000
+
+    })
+    setuserdata((prev) =>(
+        {...prev,
+       credits:result.credits
+    }))
+
     };
 
     return (
@@ -185,7 +204,7 @@ function DiscussionRoom() {
                 </div>
 
                 <div>
-                    <Chatbox conversation={conversation}/>
+                    <Chatbox conversation={conversation} coachingOption={roomdata?.coachingOption} isFeedback={isFeedback}/>
                 </div>
             </div>
         </div>

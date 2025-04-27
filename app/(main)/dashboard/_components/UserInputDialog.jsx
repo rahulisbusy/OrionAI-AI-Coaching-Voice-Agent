@@ -11,25 +11,29 @@ import {
 import { Textarea } from "@/components/ui/textarea"
 import { CoachingExpert } from '@/services/Options'
 import Image from 'next/image'
-import { useState } from 'react'
+import { useState,useContext } from 'react'
 import { Button } from '@/components/ui/button'
 import { useMutation } from 'convex/react'
 import { api } from '@/convex/_generated/api'
 import { LoaderCircle } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { UserContext } from '@/app/_context/UserContext'
 function UserInputDialog({ children, coachingitem }) {
     const [selectedExp, setselectedExp] = useState();
     const [selectedTopic, setselectedTopic] = useState();
     const createDiscussionRoom=useMutation(api.discussionRoom.CreateDiscussionRoom)
     const [loading, setloading] = useState(false);
     const [openDialog, setOpenDialog] = useState(false);
+    const {userData}=useContext(UserContext);
     const router = useRouter();
+    
         const onClickNext=async()=>{
         setloading(true)
      const result=await createDiscussionRoom({
         topicName:selectedTopic,
         coachingOption:coachingitem.name,
-        coachingExpert:selectedExp
+        coachingExpert:selectedExp,
+        uid:userData?._id
      })
      setloading(false);
      setOpenDialog(false);

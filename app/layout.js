@@ -4,7 +4,7 @@ import { stackServerApp } from "../stack";
 import "./globals.css";
 import Provider from "./provider";
 /*import { ConvexClientProvider } from "./ConvexClientProvider";*/
-
+import { Toaster } from "@/components/ui/sonner";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -31,7 +31,9 @@ export default function RootLayout({ children }) {
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       ><StackProvider app={stackServerApp}><StackTheme>
-        <Provider>{children}</Provider>
+        <Provider>{children}
+          <Toaster/>
+        </Provider>
         
       </StackTheme></StackProvider></body>
     </html>

@@ -12,10 +12,12 @@ export const AuthProvider = ({ children }) => {
     useEffect(() => {
         user && CreateNewUser();
        
+       
     }, [user])
     const CreateNewUser = async () => {
         const result = await CreateUser({ name: user?.displayName, email: user?.primaryEmail });
         setuserData(result);
+        console.log("Homepage ",result);
     }
     return (
         <div>

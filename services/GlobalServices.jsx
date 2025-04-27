@@ -48,6 +48,56 @@ export const AIModel = async (topic, coachingOption,coachingExpert, lastTwomsg) 
         };
     }
 };
+export const Feedbackgenerator = async (coachingOption, conversation) => {
+  try {
+    const option = CoachingOptions.find(item => item.name === coachingOption);
+    const prompt = option?.summeryPrompt;
+
+    console.log("Prompt for feedback:", prompt);
+
+    if (!prompt) {
+      return { role: "assistant", content: "⚠️ No valid prompt found." };
+    }
+
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" }); // even better than 2.0 for context
+
+    // Format the conversation nicely
+    const conversationText = conversation
+      .map(msg => `${msg.role === "user" ? "User" : "Assistant"}: ${msg.content}`)
+      .join("\n");
+
+    const finalPrompt = `${prompt}\n\nHere is the full conversation:\n${conversationText}\n\nNow please generate the feedback as requested.`;
+
+    console.log("📤 Final Prompt Sent to Gemini:\n", finalPrompt);
+
+    const result = await model.generateContent(finalPrompt);
+
+    const response = result?.response;
+    if (!response) {
+      console.error("❌ No response from Gemini.");
+      return { role: "assistant", content: "⚠️ No response from Gemini." };
+    }
+
+    const text = await response.text();
+    console.log("✅ Gemini Response Text:", text);
+
+    return {
+      role: "assistant",
+      content: text || "⚠️ Gemini did not return any content.",
+    };
+
+  } catch (error) {
+    console.error("❌ Gemini error:", error);
+    return {
+      role: "assistant",
+      content: "⚠️ Failed to generate feedback due to an error.",
+    };
+  }
+};
+
+
+
+
 export const speakText = async (text,voice) => {
     try {
       // Get the audio response as a Blob directly from ElevenLabs API
