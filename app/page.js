@@ -1,9 +1,9 @@
-import Image from "next/image";
-import { UserButton } from "@stackframe/stack";
-export default function Home() {
+import React from 'react'
+
+function page() {
   return (
-   <div>
-    <UserButton/>
-   </div>
-  );
+    <div>page</div>
+  )
 }
+
+export default page

@@ -1,16 +1,36 @@
 import { stackServerApp } from "./stack";
-import { NextResponse } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
+
 export async function middleware(request) {
+  try {
     const user = await stackServerApp.getUser();
-    if (!user) {
-      return NextResponse.redirect(new URL('/handler/sign-in', request.url));
+    
+    // Handle root path - redirect to dashboard if authenticated, sign-in if not
+    if (request.nextUrl.pathname === '/') {
+      if (user) {
+        return NextResponse.redirect(new URL('/dashboard', request.url));
+      } else {
+        return NextResponse.redirect(new URL('/handler/sign-in', request.url));
+      }
     }
+    
+    // Handle dashboard routes - require authentication
+    if (request.nextUrl.pathname.startsWith('/dashboard')) {
+      if (!user) {
+        return NextResponse.redirect(new URL('/handler/sign-in', request.url));
+      }
+    }
+    
+    // Allow access for authenticated users or non-protected routes
     return NextResponse.next();
+  } catch (error) {
+    // Handle any errors in authentication check
+    console.error('Middleware authentication error:', error);
+    return NextResponse.redirect(new URL('/handler/sign-in', request.url));
   }
-  
-  export const config = {
-    // You can add your own route protection logic here
-    // Make sure not to protect the root URL, as it would prevent users from accessing static Next.js files or Stack's /handler path
-    matcher: '/dashboard/:path*',
-  };
-  
+}
+
+export const config = {
+  // Protect dashboard routes and also redirect root to dashboard
+  matcher: ['/dashboard/:path*', '/'],
+};
